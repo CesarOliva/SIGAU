@@ -1,13 +1,13 @@
-import Nav from "../login/_components/nav";
-import Bienvenida from "./_components/bienvenida";
+import Main from "./_components/main";
+import Nav from "./_components/nav";
 
-const HomePage = () => {
+const LoginPage = () => {
     return (
         <>
             <Nav/>
-            <Bienvenida/>
+            <Main/>
         </>
     );
 }
  
-export default HomePage;
+export default LoginPage;

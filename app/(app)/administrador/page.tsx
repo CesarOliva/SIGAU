@@ -1,4 +1,4 @@
-import Nav from "@/app/login/_components/nav";
+import Nav from "@/app/(app)/_components/nav";
 import Bienvenida from "./_components/bienvenida";
 
 const HomePage = () => {
