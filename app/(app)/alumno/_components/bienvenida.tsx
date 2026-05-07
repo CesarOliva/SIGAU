@@ -14,19 +14,23 @@ const Bienvenida = () => {
                     </Link>
                     
                     <Link href='/alumno/datos-personales' className="bg-neutral-100 hover:bg-orange-50 transition rounded-xl p-6 text-left shadow cursor-pointer">
-                    <h3 className="text-lg font-bold text-neutral-800">Datos personales</h3>
+                        <h3 className="text-lg font-bold text-neutral-800">Datos personales</h3>
                     </Link>
                     
                     <Link href='/alumno/horario' className="bg-neutral-100 hover:bg-orange-50 transition rounded-xl p-6 text-left shadow cursor-pointer">
-                    <h3 className="text-lg font-bold text-neutral-800">Horario</h3>
+                        <h3 className="text-lg font-bold text-neutral-800">Horario</h3>
                     </Link>
                     
                     <Link href='/alumno/inscripciones' className="bg-neutral-100 hover:bg-orange-50 transition rounded-xl p-6 text-left shadow cursor-pointer">
-                    <h3 className="text-lg font-bold text-neutral-800">Inscripciones</h3>
+                        <h3 className="text-lg font-bold text-neutral-800">Inscripciones</h3>
                     </Link>
 
                     <Link href='/alumno/kardex' className="bg-neutral-100 hover:bg-orange-50 transition rounded-xl p-6 text-left shadow cursor-pointer">
-                    <h3 className="text-lg font-bold text-neutral-800">Kardex</h3>
+                        <h3 className="text-lg font-bold text-neutral-800">Kardex</h3>
+                    </Link>
+
+                    <Link href='/' className="bg-neutral-100 hover:bg-red-100 transition rounded-xl p-6 text-left shadow cursor-pointer">
+                        <h3 className="text-lg font-bold text-neutral-800">Cerrar Sesión</h3>
                     </Link>
                 </div>
             </div>
