@@ -41,7 +41,7 @@ const AsignarPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto pr-2 space-y-3">
+                        <div className="flex-1 overflow-y-auto space-y-3">
                             <div className="p-4 border border-neutral-100 rounded-xl hover:border-neutral-300 transition-colors group bg-white">
                                 <div className="flex justify-between items-start mb-2">
                                     <h4 className="font-semibold text-sm text-neutral-800">Física Cuántica Avanzada</h4>
@@ -65,19 +65,17 @@ const AsignarPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-                            <div className="p-4 border border-neutral-100 bg-neutral-50/30 rounded-xl relative group">
+                        <div className="flex-1 overflow-y-auto space-y-3">
+                            <div className="p-4 border border-neutral-100 rounded-xl hover:border-neutral-300 transition-colors group bg-white">
                                 <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                        <h4 className="font-semibold text-sm text-neutral-800">Física General I</h4>
-                                        {/* <p className="text-xs text-neutral-600 mt-1">Grupo A • Lun, Mie, Vie (08:00 - 10:00)</p> */}
-                                    </div>
+                                    <h4 className="font-semibold text-sm text-neutral-800">Física Cuántica Avanzada</h4>
                                     <button className="w-8 h-8 rounded-full bg-white text-red-500 hover:bg-neutral-300 border border-red-100 transition-colors flex items-center justify-center shadow-sm">
                                         <i className="text-sm" data-fa-i2svg=""><svg className="svg-inline--fa fa-minus" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="minus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg=""><path fill="currentColor" d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z"></path></svg></i>
                                     </button>
                                 </div>
-                                <div className="flex items-center gap-3 text-xs mt-3">
-                                    <span className="px-2 py-1 bg-white rounded-md border border-neutral-100 text-neutral-600">Id 402</span>
+                                <div className="flex items-center gap-3 text-xs text-neutral-600">
+                                    <p>Id 202</p>
+                                    <span className="flex items-center gap-1"><i data-fa-i2svg=""><svg className="svg-inline--fa fa-layer-group" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="layer-group" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"></path></svg></i> Semestre 6</span>
                                 </div>
                             </div>
                         </div>

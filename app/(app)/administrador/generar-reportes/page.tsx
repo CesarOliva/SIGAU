@@ -1,69 +1,7 @@
 'use client';
 
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-const GradesChart = () => {
-    const data = [
-        { month: 'Ene 22', calificacion: 6.8 },
-        { month: 'Abr 22', calificacion: 7.2 },
-        { month: 'Jul 22', calificacion: 7.5 },
-        { month: 'Oct 22', calificacion: 7.9 },
-        { month: 'Ene 23', calificacion: 8.1 },
-    ];
-
-    return (
-        <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgb(226, 232, 240)" />
-                <XAxis dataKey="month" stroke="rgb(100, 116, 139)" />
-                <YAxis domain={[6, 10]} stroke="rgb(100, 116, 139)" />
-                <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgb(255, 255, 255)', border: '1px solid rgb(226, 232, 240)' }}
-                    cursor={{ stroke: 'rgb(79, 70, 229)', strokeWidth: 2 }}
-                />
-                <Line 
-                    type="monotone" 
-                    dataKey="calificacion" 
-                    stroke="rgb(79, 70, 229)" 
-                    dot={{ fill: 'rgb(79, 70, 229)', r: 4 }}
-                    strokeWidth={3}
-                    isAnimationActive={true}
-                />
-            </LineChart>
-        </ResponsiveContainer>
-    );
-};
-
-const StudentsChart = () => {
-    const data = [
-        { semester: '1er', alumnos: 520 },
-        { semester: '2do', alumnos: 475 },
-        { semester: '3er', alumnos: 380 },
-        { semester: '4to', alumnos: 360 },
-        { semester: '5to', alumnos: 310 },
-        { semester: '6to', alumnos: 250 },
-    ];
-
-    return (
-        <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgb(226, 232, 240)" />
-                <XAxis dataKey="semester" stroke="rgb(100, 116, 139)" />
-                <YAxis stroke="rgb(100, 116, 139)" />
-                <Tooltip 
-                    contentStyle={{ backgroundColor: 'rgb(255, 255, 255)', border: '1px solid rgb(226, 232, 240)' }}
-                    cursor={{ fill: 'rgba(79, 70, 229, 0.1)' }}
-                />
-                <Bar 
-                    dataKey="alumnos" 
-                    fill="rgb(59, 130, 246)" 
-                    isAnimationActive={true}
-                    radius={[8, 8, 0, 0]}
-                />
-            </BarChart>
-        </ResponsiveContainer>
-    );
-};
+import { GradesChart, StudentsChart } from "./_components/charts";
+import TableRow from "./_components/tableRow";
 
 const ReportesPage = () => {
     return (
@@ -130,9 +68,6 @@ const ReportesPage = () => {
                                 <h3 className="text-lg font-bold text-neutral-800">Calificaciones Promedio</h3>
                                 <p className="text-sm text-neutral-600">Evolución por semestre</p>
                             </div>
-                            <button className="text-neutral-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-neutral-50">
-                                <i data-fa-i2svg=""><svg className="svg-inline--fa fa-ellipsis-vertical" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="ellipsis-vertical" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 512" data-fa-i2svg=""><path fill="currentColor" d="M64 360a56 56 0 1 0 0 112 56 56 0 1 0 0-112zm0-160a56 56 0 1 0 0 112 56 56 0 1 0 0-112zM120 96A56 56 0 1 0 8 96a56 56 0 1 0 112 0z"></path></svg></i>
-                            </button>
                         </div>
                         <div id="chart-grades" className="flex-1 w-full min-h-75 js-plotly-plot" style={{ flex: 1, width: '100%', minHeight: '300px' }}>
                             <GradesChart />
@@ -153,7 +88,7 @@ const ReportesPage = () => {
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-                    <div className="p-6 border-b border-neutral-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="p-6 border-b border-neutral-100 flex flex-col md:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h3 className="text-lg font-bold text-neutral-800">Rendimiento por Materia</h3>
                             <p className="text-sm text-neutral-600">Detalle de calificaciones y aprobados</p>
@@ -176,78 +111,7 @@ const ReportesPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="text-sm divide-y divide-neutral-100">
-                                <tr className="hover:bg-neutral-50/50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-neutral-800">Matemáticas Avanzadas</div>
-                                        <div className="text-xs text-neutral-600">Id 303</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-neutral-600 flex items-center gap-2">
-                                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" alt="Prof" className="w-6 h-6 rounded-full"/>
-                                        Dr. Roberto Silva
-                                    </td>
-                                    <td className="px-6 py-4 text-center font-medium text-neutral-700">45</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-900">
-                                            7.8
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center gap-2 justify-center">
-                                            <span className="text-neutral-600">75%</span>
-                                            <div className="w-16 bg-neutral-200 rounded-full h-1.5">
-                                                <div className="bg-orange-300 h-1.5 rounded-full w-[75%]"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="hover:bg-neutral-50/50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-neutral-800">Física Cuántica</div>
-                                        <div className="text-xs text-neutral-600">Id 402</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-neutral-600 flex items-center gap-2">
-                                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="Prof" className="w-6 h-6 rounded-full"/>
-                                        Dra. Elena Ramos
-                                    </td>
-                                    <td className="px-6 py-4 text-center font-medium text-neutral-700">32</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-900">
-                                            8.9
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center gap-2 justify-center">
-                                            <span className="text-neutral-600">92%</span>
-                                            <div className="w-16 bg-neutral-200 rounded-full h-1.5">
-                                                <div className="bg-orange-300 h-1.5 rounded-full w-[92%]"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="hover:bg-neutral-50/50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="font-medium text-neutral-800">Historia Universal</div>
-                                        <div className="text-xs text-neutral-600">Id 101</div>
-                                    </td>
-                                    <td className="px-6 py-4 text-neutral-600 flex items-center gap-2">
-                                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg" alt="Prof" className="w-6 h-6 rounded-full"/>
-                                        Lic. Carlos Mendoza
-                                    </td>
-                                    <td className="px-6 py-4 text-center font-medium text-neutral-700">60</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
-                                            6.5
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center gap-2 justify-center">
-                                            <span className="text-neutral-600">60%</span>
-                                            <div className="w-16 bg-neutral-200 rounded-full h-1.5">
-                                                <div className="bg-orange-300 h-1.5 rounded-full w-[60%]"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <TableRow/>
                             </tbody>
                         </table>
                     </div>
