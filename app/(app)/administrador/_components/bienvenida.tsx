@@ -28,6 +28,10 @@ const Bienvenida = () => {
                     <Link href='/administrador/generar-reportes' className="bg-neutral-100 hover:bg-orange-50 transition rounded-xl p-6 text-left shadow cursor-pointer">
                     <h3 className="text-lg font-bold text-neutral-800">Generar Reportes</h3>
                     </Link>
+
+                    <Link href='/' className="bg-neutral-100 hover:bg-red-100 transition rounded-xl p-6 text-left shadow cursor-pointer">
+                    <h3 className="text-lg font-bold text-neutral-800">Cerrar Sesión</h3>
+                    </Link>
                 </div>
             </div>
         </main>
