@@ -1,17 +1,18 @@
 const data = require('../data/materias');
 
 // Obtener todas las materias
-const getAllMaterias = (req, res) => {
+const getAllMaterias = async (req, res) => {
     try {
-        const materias = data.getAllMaterias();
+        const materias = await data.getAllMaterias();
         return res.status(200).json(materias);
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Error al obtener materias' });
     }
 };
 
 // Obtener materia por ID
-const getMateriaById = (req, res) => {
+const getMateriaById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         
@@ -19,7 +20,7 @@ const getMateriaById = (req, res) => {
             return res.status(400).json({ error: "Id inválido" });
         }
         
-        const materia = data.getMateriaById(id);
+        const materia = await data.getMateriaById(id);
         
         if (!materia) {
             return res.status(404).json({ error: "Materia no encontrada" });
@@ -27,59 +28,77 @@ const getMateriaById = (req, res) => {
         
         return res.status(200).json(materia);
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Error al obtener la materia' });
     }
 };
 
 // Obtener materias por semestre
-const getMateriasBySemestre = (req, res) => {
+const getMateriasBySemestre = async (req, res) => {
     try {
-        const semestre = parseInt(req.query.semestre);
+        const semestre = parseInt(req.params.semestre);
         
         if (isNaN(semestre)) {
             return res.status(400).json({ error: "Semestre inválido" });
         }
         
-        const materias = data.getMateriasBySemestre(semestre);
+        const materias = await data.getMateriasBySemestre(semestre);
         return res.status(200).json(materias);
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Error al obtener materias por semestre' });
     }
 };
 
 // Crear materia
-const createMateria = (req, res) => {
+const createMateria = async (req, res) => {
     try {
-        const { nombre, creditos, semestre, estado, descripcion } = req.body;
+        const { id, nombre, creditos, semestre, estado, descripcion } = req.body;
         
-        if (!nombre || !creditos || !semestre) {
-            return res.status(400).json({ error: "Faltan campos requeridos: nombre, créditos, semestre" });
+        if (!nombre || creditos === undefined || semestre === undefined) {
+            return res.status(400).json({ error: "Faltan campos requeridos: nombre, creditos, semestre" });
         }
         
-        const nuevoId = Math.max(...data.getAllMaterias().map(m => m.id), 0) + 1;
+        const creditosNumerico = parseInt(creditos);
+        const semestreNumerico = parseInt(semestre);
+
+        let idNumerico;
+        if (id !== undefined && id !== null && id !== '') {
+            idNumerico = parseInt(id);
+            if (isNaN(idNumerico)) {
+                return res.status(400).json({ error: 'id debe ser numérico' });
+            }
+        }
+
+        if (isNaN(creditosNumerico) || isNaN(semestreNumerico)) {
+            return res.status(400).json({ error: 'creditos y semestre deben ser numéricos' });
+        }
         
         const nuevaMateria = {
-            id: nuevoId,
             nombre,
-            creditos: parseInt(creditos),
-            semestre: parseInt(semestre),
+            creditos: creditosNumerico,
+            semestre: semestreNumerico,
             estado: estado || "Activo",
-            descripcion: descripcion || "",
-            fechaCreacion: new Date().toISOString()
+            descripcion: descripcion || null
         };
+
+        if (idNumerico !== undefined) {
+            nuevaMateria.id = idNumerico;
+        }
         
-        const materiaCreada = data.addMateria(nuevaMateria);
+        const materiaCreada = await data.addMateria(nuevaMateria);
         return res.status(201).json({
             message: 'Materia creada exitosamente',
             materia: materiaCreada
         });
     } catch (error) {
-        return res.status(500).json({ error: 'Error al crear la materia' });
+        console.error(error);
+        return res.status(500).json({ error: 'Error al crear la materia: ' + error.message });
     }
 };
 
 // Actualizar materia
-const updateMateria = (req, res) => {
+const updateMateria = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const update = req.body;
@@ -92,23 +111,38 @@ const updateMateria = (req, res) => {
             return res.status(400).json({ error: "No hay datos para actualizar" });
         }
         
-        const materia = data.getMateriaById(id);
+        const materia = await data.getMateriaById(id);
         if (!materia) {
             return res.status(404).json({ error: "Materia no encontrada" });
         }
+
+        if (update.creditos !== undefined) {
+            update.creditos = parseInt(update.creditos);
+            if (isNaN(update.creditos)) {
+                return res.status(400).json({ error: 'creditos debe ser numérico' });
+            }
+        }
+
+        if (update.semestre !== undefined) {
+            update.semestre = parseInt(update.semestre);
+            if (isNaN(update.semestre)) {
+                return res.status(400).json({ error: 'semestre debe ser numérico' });
+            }
+        }
         
-        const materiaActualizada = data.updateMateria(id, update);
+        const materiaActualizada = await data.updateMateria(id, update);
         return res.status(200).json({
             message: "Materia actualizada correctamente",
             materia: materiaActualizada
         });
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Error al actualizar la materia' });
     }
 };
 
 // Eliminar materia
-const deleteMateria = (req, res) => {
+const deleteMateria = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         
@@ -116,14 +150,15 @@ const deleteMateria = (req, res) => {
             return res.status(400).json({ error: "Id inválido" });
         }
         
-        const materia = data.getMateriaById(id);
+        const materia = await data.getMateriaById(id);
         if (!materia) {
             return res.status(404).json({ error: "Materia no encontrada" });
         }
         
-        data.deleteMateria(id);
+        await data.deleteMateria(id);
         return res.json({ mensaje: "Materia eliminada correctamente" });
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ error: 'Error al eliminar la materia' });
     }
 };
