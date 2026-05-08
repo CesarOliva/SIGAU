@@ -1,16 +1,15 @@
-//aqui esta llamando a al tabla de usuarios que creara eliab en la BD
-const { error } = require('node:console');
+// server/controllers/usuario.controller.js
 const data = require('../data/usuarios');
 
 //datos de los diferentes roles
 const roles = {
-    alumno:['nombres','apellidos','fNacimieto','curp','correo','telefono','direccion','matricula'],
-    docente:['nombres','apellidos','fNacimieto','rfc','correo','telefono','direccion','descripcion','fIngreso','especialidad','matricula'], //si  este no lleva matricula hay que quitarla
-    administrador:['nombres','apellidos','fNacimieto','curp','correo','telefono','direccion','matricula'] //aqui tambien le puse matricula
-}
+    alumno: ['nombres', 'apellidos', 'fNacimiento', 'curp', 'correo', 'telefono', 'direccion', 'matricula'],
+    docente: ['nombres', 'apellidos', 'fNacimiento', 'rfc', 'correo', 'telefono', 'direccion', 'descripcion', 'fIngreso', 'especialidad'],
+    administrador: ['nombres', 'apellidos', 'fNacimiento', 'curp', 'correo', 'telefono', 'direccion']
+};
 
 //valida que le rol exista
-const validarCamposRol=(datos,rol)=>{
+const validarCamposRol = (datos, rol) => {
     const campos = roles[rol];
     if (!campos) return { valido: false, error: 'Rol no válido' };
     
@@ -22,119 +21,150 @@ const validarCamposRol=(datos,rol)=>{
     return { valido: true };
 }
 
-
 //crear usuarios
-const createUsers = (req,res) =>{
-    const {rol, ...datosUsuario}=req.body;
+const createUsers = (req, res) => {
+    const { rol, ...datosUsuario } = req.body;
 
-    //validamos que no haya campos vacios
-    if(!rol || rol.trim()===''){
-        return res.status(400).json({error:"Rol obligatorio"});
+    //verifica el rol no este vacio
+    if (!rol || rol.trim() === '') {
+        return res.status(400).json({ error: "Rol obligatorio" });
     }
 
-    //valida el rol
-    const validaciones=validarCamposRol(datosUsuario,rol);
-    if(!validaciones.valido) return res.status(400).json({error:validaciones.error})
+    //valida los roles
+    const validaciones = validarCamposRol(datosUsuario, rol);
+    if (!validaciones.valido) return res.status(400).json({ error: validaciones.error });
 
-
-    // se crea el usuario
+    //crea el nuevo usuario, con su estado activo, y fecha de creacion actual
     const nuevoUsuario = {
-        id: Date.now(), 
+        id: Date.now(),
         rol,
         ...datosUsuario,
         estado: 'Activo',
         fechaCreacion: new Date().toISOString()
     };
 
+
     try {
+                            //metodo que debe de hacer eli
         const usuarioCreado = data.addUser(nuevoUsuario);
+        //mensaje de usario creado 
         return res.status(201).json({
             message: 'Usuario creado exitosamente',
             usuario: usuarioCreado
         });
     } catch (error) {
+        //catch en caso de error al guardar usuario
         return res.status(500).json({ error: 'Error al guardar el usuario' });
     }
 };
 
-
-//eliminar usuario
-const deleteUser=(req,res) =>{
-    //se obtiene el id
-    const id = parseInt(req.params.id);
-
-    if(isNaN(id)){
-        return res.status(400).json({
-            error:"Id invalido"
-        });
-    }
-
-    //este metodo lo debe de poner eli en la BD
-    const usuario = data.getUserById(id);
-
-    if(!usuario){
-        return res.status(404).json({
-            error:"Usuario no encontrado"
-        });
-    }
-
-    //este metodo lo debe de poner eli en la BD
-    data.deleteUser(id);
-    res.json({mensaje:"Usuario eliminado correctamente"})
+//mostrar usuarios por su id
+const showUsers = (req, res) => {
+            //metodo que debe de hacer eli 
+    res.json(data.getUsers());
 }
 
+//mostrar usuario especifico (id)
+const showUser = (req, res) => {
+    const id = parseInt(req.params.id);
 
-const editUser=(req,res)=>{
-    const id =parseInt(req.params.id);
-    const update = req.body;
-
-    if(isNaN(id)){
-        return res.status(400).json({
-            error:"Id invalido"
-        });
+    //si no es un numero
+    if (isNaN(id)) {
+        return res.status(400).json({ error: "ID invalido" });
     }
-
-    //verifica que tenga datos
-    if(!update || Object.keys(update).length===0){
-        return res.status(400).json({error:"No hay datos para actualizar"});
-    }
-
-
-    //este metodo lo debe de poner eli en la BD
+    
+    //variable que es igual al usuario por si id
+                    //metodo que debe de hacer eli
     const usuario = data.getUserById(id);
-    if(!usuario){
-        return res.status(404).json({
-            error:"Usuario no encontrado"
-        });
+
+    //si es diferente al usuario
+    if (!usuario) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+    res.json(usuario);
+}
 
-     if (update.rol && update.rol !== usuario.rol) {
-        // Combinar datos existentes con las actualizaciones para validar
-        const datosCombinados = { ...usuarioExistente, ...updates };
+//eliminar usuario por su id
+const deleteUser = (req, res) => {
+    const id = parseInt(req.params.id);
+
+    //si no es numero
+    if (isNaN(id)) {
+        return res.status(400).json({ error: "Id invalido" });
+    }
+
+                    //metodo que debe de hacer eli
+    const usuario = data.getUserById(id);
+
+    //si es diferente al usuario
+    if (!usuario) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    //eliminar usuario
+    //metood que debe de hacer eli en BD
+    data.deleteUser(id);
+    res.json({ mensaje: "Usuario eliminado correctamente" });
+}
+
+//editar usuario (CORREGIDO)
+const editUser = (req, res) => {
+    const id = parseInt(req.params.id);
+    const update = req.body;  // variable se llama "update"
+
+    //si no es un numero
+    if (isNaN(id)) {
+        return res.status(400).json({ error: "Id invalido" });
+    }
+
+    //si update es diferente o no hay datos
+    if (!update || Object.keys(update).length === 0) {
+        return res.status(400).json({ error: "No hay datos para actualizar" });
+    }
+
+    //metodo que debe de hacer eli en BD
+    const usuario = data.getUserById(id);  // variable se llama "usuario"
+    
+    //si es diferente al usuario
+    if (!usuario) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // Si actualiza el rol y es diferente al actual
+    if (update.rol && update.rol !== usuario.rol) {
+        //se actualizan los datos y se eliminan el estado, feche y id
+        const datosCombinados = { ...usuario, ...update };
+        delete datosCombinados.id;
         delete datosCombinados.estado;
         delete datosCombinados.fechaCreacion;
         
-        const validacion = validarCamposRol(datosCombinados, updates.rol);
+        // se validan los campos viejos y nuevos
+        const validacion = validarCamposRol(datosCombinados, update.rol);
+        //si es diferente a validacion
         if (!validacion.valido) {
             return res.status(400).json({ error: validacion.error });
         }
     }
 
-    //actualiza el usuario
     try {
-        const usuarioActualizado = data.updateUser(id, updates);
-        res.status(200).json({ 
+        // mensaje de usuario actualizado
+        const usuarioActualizado = data.updateUser(id, update);
+        res.status(200).json({
             message: "Usuario actualizado correctamente",
-            usuario: usuarioActualizado 
+            usuario: usuarioActualizado
         });
     } catch (error) {
+        //mensaje en caso de error
         return res.status(500).json({ error: "Error al actualizar el usuario" });
     }
 }
 
-module.exports={
+//exportamos los metodos
+module.exports = {
     createUsers,
+    showUser,
+    showUsers,
     deleteUser,
     editUser
 }
