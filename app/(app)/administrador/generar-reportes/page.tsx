@@ -1,9 +1,37 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { GradesChart, StudentsChart } from "./_components/charts";
 import TableRow from "./_components/tableRow";
 
+interface Estadisticas {
+    totalAlumnos: number;
+    promedioGeneral: number;
+    tasaAprobacion: number;
+    materiasActivas: number;
+}
+
 const ReportesPage = () => {
+    const [stats, setStats] = useState<Estadisticas | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/estadisticas/dashboard');
+                if (!response.ok) throw new Error('Error fetching stats');
+                const data = await response.json();
+                setStats(data);
+            } catch (err) {
+                console.error('Error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
     return (
         <div className="flex-1 overflow-y-auto p-4 sm:p-8">
             <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -13,7 +41,9 @@ const ReportesPage = () => {
                         <div className="relative z-10 flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-sm font-medium text-neutral-600 mb-1">Total Alumnos</p>
-                                <h3 className="text-2xl font-bold text-neutral-800">2,450</h3>
+                                <h3 className="text-2xl font-bold text-neutral-800">
+                                    {loading ? '...' : stats?.totalAlumnos.toLocaleString()}
+                                </h3>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
                                 <i data-fa-i2svg=""><svg className="svg-inline--fa fa-user-graduate" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user-graduate" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" data-fa-i2svg=""><path fill="currentColor" d="M219.3 .5c3.1-.6 6.3-.6 9.4 0l200 40C439.9 42.7 448 52.6 448 64s-8.1 21.3-19.3 23.5L352 102.9V160c0 70.7-57.3 128-128 128s-128-57.3-128-128V102.9L48 93.3v65.1l15.7 78.4c.9 4.7-.3 9.6-3.3 13.3s-7.6 5.9-12.4 5.9H16c-4.8 0-9.3-2.1-12.4-5.9s-4.3-8.6-3.3-13.3L16 158.4V86.6C6.5 83.3 0 74.3 0 64C0 52.6 8.1 42.7 19.3 40.5l200-40zM111.9 327.7c10.5-3.4 21.8 .4 29.4 8.5l71 75.5c6.3 6.7 17 6.7 23.3 0l71-75.5c7.6-8.1 18.9-11.9 29.4-8.5C401 348.6 448 409.4 448 481.3c0 17-13.8 30.7-30.7 30.7H30.7C13.8 512 0 498.2 0 481.3c0-71.9 47-132.7 111.9-153.6z"></path></svg></i>
@@ -26,7 +56,9 @@ const ReportesPage = () => {
                         <div className="relative z-10 flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-sm font-medium text-neutral-600 mb-1">Promedio General</p>
-                                <h3 className="text-2xl font-bold text-neutral-800">8.4<span className="text-lg text-neutral-400 font-normal">/10</span></h3>
+                                <h3 className="text-2xl font-bold text-neutral-800">
+                                    {loading ? '...' : <><span>{stats?.promedioGeneral.toFixed(1)}</span><span className="text-lg text-neutral-400 font-normal">/10</span></>}
+                                </h3>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-inner">
                                 <i data-fa-i2svg=""><svg className="svg-inline--fa fa-star" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="star" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"></path></svg></i>
@@ -39,7 +71,9 @@ const ReportesPage = () => {
                         <div className="relative z-10 flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-sm font-medium text-neutral-600 mb-1">Tasa de Aprobación</p>
-                                <h3 className="text-2xl font-bold text-neutral-800">87%</h3>
+                                <h3 className="text-2xl font-bold text-neutral-800">
+                                    {loading ? '...' : `${stats?.tasaAprobacion}%`}
+                                </h3>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-inner">
                                 <i data-fa-i2svg=""><svg className="svg-inline--fa fa-circle-check" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="circle-check" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" data-fa-i2svg=""><path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"></path></svg></i>
@@ -52,7 +86,9 @@ const ReportesPage = () => {
                         <div className="relative z-10 flex justify-between items-start mb-4">
                             <div>
                                 <p className="text-sm font-medium text-neutral-600 mb-1">Materias Activas</p>
-                                <h3 className="text-2xl font-bold text-neutral-800">142</h3>
+                                <h3 className="text-2xl font-bold text-neutral-800">
+                                    {loading ? '...' : stats?.materiasActivas}
+                                </h3>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-inner">
                                 <i data-fa-i2svg=""><svg className="svg-inline--fa fa-layer-group" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="layer-group" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" data-fa-i2svg=""><path fill="currentColor" d="M264.5 5.2c14.9-6.9 32.1-6.9 47 0l218.6 101c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 149.8C37.4 145.8 32 137.3 32 128s5.4-17.9 13.9-21.8L264.5 5.2zM476.9 209.6l53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 277.8C37.4 273.8 32 265.3 32 256s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0l152-70.2zm-152 198.2l152-70.2 53.2 24.6c8.5 3.9 13.9 12.4 13.9 21.8s-5.4 17.9-13.9 21.8l-218.6 101c-14.9 6.9-32.1 6.9-47 0L45.9 405.8C37.4 401.8 32 393.3 32 384s5.4-17.9 13.9-21.8l53.2-24.6 152 70.2c23.4 10.8 50.4 10.8 73.8 0z"></path></svg></i>

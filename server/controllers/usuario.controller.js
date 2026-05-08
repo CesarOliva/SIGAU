@@ -22,6 +22,37 @@ const validarCamposRol=(datos,rol)=>{
     return { valido: true };
 }
 
+// Obtener todos los usuarios
+const getUsers = (req, res) => {
+    try {
+        const rol = req.query.rol;
+        const usuarios = data.getAllUsers(rol);
+        return res.status(200).json(usuarios);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+};
+
+// Obtener usuario por ID
+const getUserById = (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        if (isNaN(id)) {
+            return res.status(400).json({ error: "Id inválido" });
+        }
+        
+        const usuario = data.getUserById(id);
+        
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+        
+        return res.status(200).json(usuario);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al obtener el usuario' });
+    }
+};
 
 //crear usuarios
 const createUsers = (req,res) =>{
@@ -99,7 +130,6 @@ const editUser=(req,res)=>{
         return res.status(400).json({error:"No hay datos para actualizar"});
     }
 
-
     //este metodo lo debe de poner eli en la BD
     const usuario = data.getUserById(id);
     if(!usuario){
@@ -108,14 +138,13 @@ const editUser=(req,res)=>{
         });
     }
 
-
-     if (update.rol && update.rol !== usuario.rol) {
+    if (update.rol && update.rol !== usuario.rol) {
         // Combinar datos existentes con las actualizaciones para validar
-        const datosCombinados = { ...usuarioExistente, ...updates };
+        const datosCombinados = { ...usuario, ...update };
         delete datosCombinados.estado;
         delete datosCombinados.fechaCreacion;
         
-        const validacion = validarCamposRol(datosCombinados, updates.rol);
+        const validacion = validarCamposRol(datosCombinados, update.rol);
         if (!validacion.valido) {
             return res.status(400).json({ error: validacion.error });
         }
@@ -123,7 +152,7 @@ const editUser=(req,res)=>{
 
     //actualiza el usuario
     try {
-        const usuarioActualizado = data.updateUser(id, updates);
+        const usuarioActualizado = data.updateUser(id, update);
         res.status(200).json({ 
             message: "Usuario actualizado correctamente",
             usuario: usuarioActualizado 
@@ -134,6 +163,8 @@ const editUser=(req,res)=>{
 }
 
 module.exports={
+    getUsers,
+    getUserById,
     createUsers,
     deleteUser,
     editUser
