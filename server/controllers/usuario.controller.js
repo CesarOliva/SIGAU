@@ -21,6 +21,41 @@ const validarCamposRol = (datos, rol) => {
     return { valido: true };
 }
 
+
+// Obtener todos los usuarios
+const getUsers = (req, res) => {
+    try {
+        const rol = req.query.rol;
+        const usuarios = data.getAllUsers(rol);
+        return res.status(200).json(usuarios);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+};
+
+// Obtener usuario por ID
+const getUserById = (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        if (isNaN(id)) {
+            return res.status(400).json({ error: "Id inválido" });
+        }
+        
+        const usuario = data.getUserById(id);
+        
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+        
+        return res.status(200).json(usuario);
+    } catch (error) {
+        return res.status(500).json({ error: 'Error al obtener el usuario' });
+    }
+};
+
+
+
 //crear usuarios
 const createUsers = (req, res) => {
     const { rol, ...datosUsuario } = req.body;
@@ -58,11 +93,13 @@ const createUsers = (req, res) => {
     }
 };
 
+
 //mostrar usuarios por su id
 const showUsers = (req, res) => {
             //metodo que debe de hacer eli 
     res.json(data.getUsers());
 }
+
 
 //mostrar usuario especifico (id)
 const showUser = (req, res) => {
@@ -75,6 +112,13 @@ const showUser = (req, res) => {
     
     //variable que es igual al usuario por si id
                     //metodo que debe de hacer eli
+
+    //verifica que tenga datos
+    if(!update || Object.keys(update).length===0){
+        return res.status(400).json({error:"No hay datos para actualizar"});
+    }
+
+    //este metodo lo debe de poner eli en la BD
     const usuario = data.getUserById(id);
 
     //si es diferente al usuario
@@ -84,6 +128,7 @@ const showUser = (req, res) => {
 
     res.json(usuario);
 }
+
 
 //eliminar usuario por su id
 const deleteUser = (req, res) => {
@@ -142,6 +187,13 @@ const editUser = (req, res) => {
         // se validan los campos viejos y nuevos
         const validacion = validarCamposRol(datosCombinados, update.rol);
         //si es diferente a validacion
+    if (update.rol && update.rol !== usuario.rol) {
+        // Combinar datos existentes con las actualizaciones para validar
+        const datosCombinados = { ...usuario, ...update };
+        delete datosCombinados.estado;
+        delete datosCombinados.fechaCreacion;
+        
+        const validacion = validarCamposRol(datosCombinados, update.rol);
         if (!validacion.valido) {
             return res.status(400).json({ error: validacion.error });
         }
@@ -153,15 +205,18 @@ const editUser = (req, res) => {
         res.status(200).json({
             message: "Usuario actualizado correctamente",
             usuario: usuarioActualizado
-        });
+        })
     } catch (error) {
         //mensaje en caso de error
         return res.status(500).json({ error: "Error al actualizar el usuario" });
+        }
     }
 }
 
 //exportamos los metodos
 module.exports = {
+    getUsers,
+    getUserById,
     createUsers,
     showUser,
     showUsers,

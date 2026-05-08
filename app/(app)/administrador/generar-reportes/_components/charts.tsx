@@ -1,14 +1,33 @@
+'use client';
+
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
 
 export const StudentsChart = () => {
-    const data = [
-        { semester: '1er', alumnos: 520 },
-        { semester: '2do', alumnos: 475 },
-        { semester: '3er', alumnos: 380 },
-        { semester: '4to', alumnos: 360 },
-        { semester: '5to', alumnos: 310 },
-        { semester: '6to', alumnos: 250 },
-    ];
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/estadisticas/alumnos-por-semestre');
+                if (!response.ok) throw new Error('Error fetching data');
+                const result = await response.json();
+                setData(result);
+            } catch (err) {
+                console.error('Error:', err);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div className="flex items-center justify-center h-full text-neutral-500">Cargando gráfico...</div>;
+    }
 
     return (
         <ResponsiveContainer width="100%" height={300}>
@@ -32,13 +51,30 @@ export const StudentsChart = () => {
 };
 
 export const GradesChart = () => {
-    const data = [
-        { month: 'Ene 22', calificacion: 6.8 },
-        { month: 'Abr 22', calificacion: 7.2 },
-        { month: 'Jul 22', calificacion: 7.5 },
-        { month: 'Oct 22', calificacion: 7.9 },
-        { month: 'Ene 23', calificacion: 8.1 },
-    ];
+    const [data, setData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetch('http://localhost:3001/api/estadisticas/evolucion-calificaciones');
+                if (!response.ok) throw new Error('Error fetching data');
+                const result = await response.json();
+                setData(result);
+            } catch (err) {
+                console.error('Error:', err);
+                setData([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    if (loading) {
+        return <div className="flex items-center justify-center h-full text-neutral-500">Cargando gráfico...</div>;
+    }
 
     return (
         <ResponsiveContainer width="100%" height={300}>
