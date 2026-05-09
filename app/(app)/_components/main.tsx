@@ -1,8 +1,69 @@
+"use client";
+
 import { BookOpen, GraduationCap, Lock, User } from "lucide-react";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUserGraduate, faChalkboardUser, faUserShield } from '@fortawesome/free-solid-svg-icons'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 const Main = () => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [selectedRole, setSelectedRole] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+
+    const handleRoleSelect = (role: string) => {
+        setSelectedRole(role);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedRole) {
+            toast.error('Selecciona un rol');
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const response = await fetch('http://localhost:3001/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    role: selectedRole,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Guardar token en localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+
+                // Redirigir según rol
+                if (selectedRole === 'alumno') {
+                    router.push('/alumno');
+                } else if (selectedRole === 'docente') {
+                    router.push('/docente');
+                } else if (selectedRole === 'administrador') {
+                    router.push('/administrador');
+                }
+            } else {
+                toast.error(data.error || 'Error en el login');
+            }
+        } catch (error) {
+            toast.error('Error de conexión');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <main className="grow flex items-center justify-center p-4 md:p-8 w-full relative overflow-hidden">
             <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden min-h-150">
@@ -29,20 +90,35 @@ const Main = () => {
                             <p className="text-sm text-gray-500 mt-1">Ingresa tus datos para continuar</p>
                         </div>
 
-                        <form action="#" method="POST" className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             <div id="role-selection" className="space-y-3">
                                 <div className="grid grid-cols-3 gap-3">
-                                    <div className="flex flex-col items-center justify-center p-3 border border-[#2563EB] rounded-xl hover:border-brand-blue transition-all bg-[#EFF6FF] shadow-sm text-center h-full">
+                                    <div 
+                                        className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all shadow-sm text-center h-full cursor-pointer ${
+                                            selectedRole === 'alumno' ? 'border-blue-600 bg-blue-50' : 'border-[#2563EB] bg-[#EFF6FF] hover:border-brand-blue'
+                                        }`}
+                                        onClick={() => handleRoleSelect('alumno')}
+                                    >
                                         <FontAwesomeIcon icon={faUserGraduate} className="text-blue-600 size-6 mb-2"/>
                                         <span className="text-xs font-semibold text-blue-600">Estudiante</span>
                                     </div>
 
-                                    <div className="flex flex-col items-center justify-center p-3 border border-[#2563EB] rounded-xl hover:border-brand-blue transition-all bg-[#EFF6FF] shadow-sm text-center h-full">
+                                    <div 
+                                        className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all shadow-sm text-center h-full cursor-pointer ${
+                                            selectedRole === 'docente' ? 'border-blue-600 bg-blue-50' : 'border-[#2563EB] bg-[#EFF6FF] hover:border-brand-blue'
+                                        }`}
+                                        onClick={() => handleRoleSelect('docente')}
+                                    >
                                         <FontAwesomeIcon icon={faChalkboardUser} className="text-blue-600 size-6 mb-2"/>
                                         <span className="text-xs font-semibold text-blue-600">Docente</span>
                                     </div>
 
-                                    <div className="flex flex-col items-center justify-center p-3 border border-[#2563EB] rounded-xl hover:border-brand-blue transition-all bg-[#EFF6FF] shadow-sm text-center h-full">
+                                    <div 
+                                        className={`flex flex-col items-center justify-center p-3 border rounded-xl transition-all shadow-sm text-center h-full cursor-pointer ${
+                                            selectedRole === 'administrador' ? 'border-blue-600 bg-blue-50' : 'border-[#2563EB] bg-[#EFF6FF] hover:border-brand-blue'
+                                        }`}
+                                        onClick={() => handleRoleSelect('administrador')}
+                                    >
                                         <FontAwesomeIcon icon={faUserShield} className="text-blue-600 size-6 mb-2"/>
                                         <span className="text-xs font-semibold text-blue-600">Administrador</span>
                                     </div>
@@ -56,7 +132,16 @@ const Main = () => {
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <User className="size-4 text-gray-400"/>
                                     </div>
-                                    <input type="text" id="username" name="username" placeholder="Matrícula / No. Empleado" className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl sm:text-sm bg-gray-50 transition-colors" required={true}/>
+                                    <input 
+                                        type="text" 
+                                        id="username" 
+                                        name="username" 
+                                        placeholder="Matrícula / No. Empleado" 
+                                        className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl sm:text-sm bg-gray-50 transition-colors" 
+                                        required
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
@@ -66,14 +151,25 @@ const Main = () => {
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <Lock className="size-4 text-gray-400"/>
                                     </div>
-                                    <input type="password" id="password" name="password" placeholder="••••••••" className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl sm:text-sm bg-gray-50 transition-colors" required={true}/>
+                                    <input 
+                                        type="password" 
+                                        id="password" 
+                                        name="password" 
+                                        placeholder="••••••••" 
+                                        className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl sm:text-sm bg-gray-50 transition-colors" 
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
                                 </div>
                             </div>
 
-                            <p className="ml-2 block text-sm font-medium text-red-500">Usuario o contraseña incorrecta</p>
-
-                            <button type="button" className="w-full flex justify-center py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 cursor-pointer">
-                                Iniciar sesión
+                            <button 
+                                type="submit" 
+                                disabled={loading}
+                                className="w-full flex justify-center py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 cursor-pointer disabled:opacity-50"
+                            >
+                                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                             </button>
                         </form>
 

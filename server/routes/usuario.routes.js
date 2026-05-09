@@ -21,4 +21,7 @@ router.get('/usuarios/next-id', usuarioController.getNextId);
 
 
 
+// POST /api/login - Iniciar sesión
+router.post('/login', usuarioController.login);
+
 module.exports = router;
