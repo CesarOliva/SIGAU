@@ -38,10 +38,6 @@ const AsignarPage = () => {
                 setDocentes(docentesData);
                 setMaterias(materiasData);
                 
-                // Seleccionar el primer docente por defecto
-                if (docentesData.length > 0) {
-                    setSelectedDocente(docentesData[0]);
-                }
             } catch (err) {
                 console.error('Error:', err);
             } finally {
@@ -83,7 +79,7 @@ const AsignarPage = () => {
                     {selectedDocente && (
                         <div className="mt-6 p-4 border border-neutral-100 rounded-xl bg-neutral-50 flex items-center justify-between flex-wrap gap-4">
                             <div className="flex items-center gap-4">
-                                <img src={selectedDocente.avatar || "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-default.jpg"} alt="Docente" className="w-12 h-12 rounded-full object-cover"/>
+                                <img src={selectedDocente.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt="Docente" className="w-12 h-12 rounded-full object-cover"/>
                                 <h3 className="font-semibold text-neutral-800">{selectedDocente.nombres} {selectedDocente.apellidos}</h3>
                             </div>
                         </div>
@@ -100,7 +96,7 @@ const AsignarPage = () => {
                                     }}
                                     className="w-full p-3 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors text-left flex items-center gap-3"
                                 >
-                                    <img src={doc.avatar || "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-default.jpg"} alt={doc.nombres} className="w-8 h-8 rounded-full object-cover"/>
+                                    <img src={doc.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt={doc.nombres} className="w-8 h-8 rounded-full object-cover"/>
                                     <span className="text-sm font-medium text-neutral-800">{doc.nombres} {doc.apellidos}</span>
                                 </button>
                             ))}

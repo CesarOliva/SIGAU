@@ -18,7 +18,7 @@ export interface UsuarioRowData {
     descripcion?: string | null;
     fIngreso?: string | null;
     especialidad?: string | null;
-    carrera?: number | string | null;
+    carrera?: string | null;
     semestre?: number | string | null;
 }
 
@@ -129,7 +129,15 @@ const TableRow = ({
                     {renderInput('especialidad', current.especialidad || '', 'Especialidad', 'text', 'w-48 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300')}
                 </td>
                 <td className="px-5 py-4">
-                    {renderInput('carrera', current.carrera ?? '', 'Carrera', 'number', 'w-28 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300')}
+                    <select
+                        value={current.carrera || 'Sistemas computacionales'}
+                        onChange={(event) => onEditChange?.('carrera', event.target.value)}
+                        className="w-56 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
+                    >
+                        <option value="Sistemas computacionales">Sistemas computacionales</option>
+                        <option value="Gestión Empresarial">Gestión Empresarial</option>
+                        <option value="Mecatronica">Mecatronica</option>
+                    </select>
                 </td>
                 <td className="px-5 py-4">
                     {renderInput('semestre', current.semestre ?? '', 'Semestre', 'number', 'w-28 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300')}
