@@ -6,6 +6,20 @@ const usuarioRoutes = require('./routes/usuario.routes');
 const materiasRoutes = require('./routes/materias.routes');
 const estadisticasRoutes = require('./routes/estadisticas.routes');
 
+console.log('Cargando rutas...');
+console.log('usuarioRoutes:', typeof usuarioRoutes);
+
+// Log detallado de las rutas
+if (usuarioRoutes && usuarioRoutes.stack) {
+    console.log('Rutas de usuario:');
+    usuarioRoutes.stack.forEach((layer, index) => {
+        if (layer.route) {
+            const methods = Object.keys(layer.route.methods).join(', ').toUpperCase();
+            console.log(`  ${index + 1}. ${methods} ${layer.route.path}`);
+        }
+    });
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -13,6 +27,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+console.log('Montando rutas...');
 app.use('/api', usuarioRoutes);
 app.use('/api', materiasRoutes);
 app.use('/api', estadisticasRoutes);

@@ -1,6 +1,8 @@
 //aqui esta llamando a al tabla de usuarios que creara eliab en la BD
 const { error } = require('node:console');
 const data = require('../data/usuarios');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 //datos de los diferentes roles
 const roles = {
@@ -152,10 +154,58 @@ const editUser = async (req,res)=>{
     }
 }
 
+// Función de login
+const login = async (req, res) => {
+    const { username, password, role } = req.body;
+
+    if (!username || !password || !role) {
+        return res.status(400).json({ error: 'Usuario, contraseña y rol son requeridos' });
+    }
+
+    try {
+        // Buscar usuario por num_control (username) y rol
+        const usuarios = await data.getAllUsers(role);
+        const usuario = usuarios.find(u => u.id == username);
+
+        if (!usuario) {
+            return res.status(401).json({ error: 'Usuario no encontrado' });
+        }
+
+        // Verificar contraseña (temporalmente texto plano, cambiar a bcrypt en producción)
+        const isValidPassword = password === usuario.contraseña;
+
+        if (!isValidPassword) {
+            return res.status(401).json({ error: 'Contraseña incorrecta' });
+        }
+
+        // Generar token JWT
+        const token = jwt.sign(
+            { id: usuario.id, rol: usuario.rol },
+            process.env.JWT_SECRET || 'secret_key',
+            { expiresIn: '24h' }
+        );
+
+        return res.status(200).json({
+            message: 'Login exitoso',
+            token,
+            user: {
+                id: usuario.id,
+                nombres: usuario.nombres,
+                apellidos: usuario.apellidos,
+                rol: usuario.rol
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error en el login' });
+    }
+};
+
 module.exports={
     getUsers,
     getUserById,
     createUsers,
     deleteUser,
-    editUser
+    editUser,
+    login
 }

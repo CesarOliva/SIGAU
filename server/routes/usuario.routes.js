@@ -17,4 +17,7 @@ router.put('/usuarios/:id', usuarioController.editUser);
 // DELETE /api/usuarios/:id - Eliminar usuario
 router.delete('/usuarios/:id', usuarioController.deleteUser);
 
+// POST /api/login - Iniciar sesión
+router.post('/login', usuarioController.login);
+
 module.exports = router;
