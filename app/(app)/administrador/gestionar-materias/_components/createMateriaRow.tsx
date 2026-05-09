@@ -1,7 +1,7 @@
 'use client';
 
-import { Save, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { X } from 'lucide-react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import type { MateriaRowData } from './tableRow';
 
@@ -18,24 +18,34 @@ const CreateMateriaRow = ({ visible, onCancel, onCreated, onError }: Props) => {
     const [draft, setDraft] = useState(emptyDraft());
     const [saving, setSaving] = useState(false);
 
-    React.useEffect(() => {
-        if (visible) {
-            setDraft(emptyDraft());
-            onError(null);
-        }
-    }, [visible, onError]);
-
     const handleChange = (field: keyof typeof draft, value: string) => setDraft((p) => ({ ...p, [field]: value }));
 
-    const validate = () => {
-        if (!draft.nombre || draft.creditos === '' || draft.semestre === '') return 'Faltan campos requeridos: nombre, creditos, semestre';
-        if (Number.isNaN(Number(draft.creditos)) || Number.isNaN(Number(draft.semestre))) return 'creditos y semestre deben ser numéricos';
+    const validateDraft = () => {
+        const requiredFields: Array<{ field: keyof typeof draft; label: string }> = [
+            { field: 'nombre', label: 'nombre' },
+            { field: 'creditos', label: 'creditos' },
+            { field: 'semestre', label: 'semestre' },
+        ];
+
+        const missing = requiredFields.find(({ field }) => {
+            const value = draft[field];
+            return value === '' || value === null || value === undefined || String(value).trim() === '';
+        });
+
+        const id = Number(draft.id);
+        const creditos = Number(draft.creditos);
+        const semestre = Number(draft.semestre);
+
+        if (missing) return `Falta completar el campo: ${missing.label}`;
+        if (draft.id && (Number.isNaN(id) || !Number.isInteger(id) || id <= 0)) return 'El ID debe ser un numero entero positivo';
+        if (Number.isNaN(creditos) || creditos <= 0) return 'Creditos debe ser un numero positivo';
+        if (Number.isNaN(semestre) || !Number.isInteger(semestre) || semestre <= 0) return 'Semestre debe ser un numero entero positivo';
         if (String(draft.nombre).trim().length < 3) return 'El nombre debe tener al menos 3 caracteres';
         return null;
     };
 
     const handleSave = async () => {
-        const v = validate();
+        const v = validateDraft();
         if (v) { onError(v); toast.error(v); return; }
         setSaving(true); onError(null);
 
