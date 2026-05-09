@@ -1,7 +1,128 @@
-import { Plus } from "lucide-react";
-import TableRow from "./_components/tableRow";
+"use client";
+
+import { useCallback, useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { TableRow, type MateriaRowData } from './_components/tableRow';
+import CreateMateriaRow from './_components/createMateriaRow';
 
 const MateriasPage = () => {
+    const [materias, setMaterias] = useState<MateriaRowData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [showCreate, setShowCreate] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editDraft, setEditDraft] = useState<MateriaRowData | null>(null);
+    const [saving, setSaving] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+
+    const showErrorToast = (message: string | null) => {
+        if (message) toast.error(message);
+    };
+
+    const showSuccessToast = (message: string) => {
+        toast.success(message);
+    };
+
+    const loadMaterias = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch('http://localhost:3001/api/materias');
+            if (!res.ok) throw new Error('No se pudieron cargar las materias');
+            const data = await res.json();
+            setMaterias(data);
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Error desconocido';
+            setError(msg);
+            showErrorToast(msg);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { loadMaterias(); }, [loadMaterias]);
+
+
+    const handleCreateClick = () => {
+        setShowCreate(true);
+        setEditingId(null);
+        setEditDraft(null);
+        setError(null);
+    };
+
+    const handleCancelCreate = () => setShowCreate(false);
+
+    const handleCreated = (m: MateriaRowData) => {
+        setMaterias((prev) => [m, ...prev]);
+        setShowCreate(false);
+        showSuccessToast('Materia creada exitosamente');
+    };
+
+    const handleStartEdit = (m: MateriaRowData) => {
+        setEditingId(m.id);
+        setEditDraft({ ...m });
+        setShowCreate(false);
+    };
+
+    const handleEditChange = (field: keyof MateriaRowData, value: string) => {
+        setEditDraft((prev) => prev ? { ...prev, [field]: value } : prev);
+    };
+
+    const handleCancelEdit = () => { setEditingId(null); setEditDraft(null); };
+
+    const handleSaveEdit = async () => {
+        if (!editDraft) { setError('No hay materia en edición'); return; }
+        setSaving(true); setError(null);
+
+        const payload: Record<string, string | number> = {
+            nombre: editDraft.nombre,
+            creditos: Number(editDraft.creditos),
+            semestre: Number(editDraft.semestre),
+            estado: editDraft.estado || 'Activo',
+            descripcion: editDraft.descripcion || ''
+        };
+
+        try {
+            const res = await fetch(`http://localhost:3001/api/materias/${editDraft.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error || 'No se pudo actualizar la materia');
+
+            setMaterias((prev) => prev.map((mm) => (mm.id === editDraft.id ? data.materia : mm)));
+            setEditingId(null);
+            setEditDraft(null);
+            showSuccessToast('Materia actualizada correctamente');
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Error desconocido';
+            setError(msg);
+            showErrorToast(msg);
+        } finally { setSaving(false); }
+    };
+
+    const handleDelete = async (id: number) => {
+        const confirmed = window.confirm('¿Eliminar materia?');
+        if (!confirmed) return;
+        setDeletingId(id); setError(null);
+        try {
+            const res = await fetch(`http://localhost:3001/api/materias/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data?.error || 'No se pudo eliminar la materia');
+            setMaterias((prev) => prev.filter((m) => m.id !== id));
+            if (editingId === id) handleCancelEdit();
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Error desconocido';
+            setError(msg);
+            showErrorToast(msg);
+            return;
+        } finally { setDeletingId(null); }
+        showSuccessToast('Materia eliminada correctamente');
+    };
+
     return (
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto space-y-6">
@@ -10,7 +131,7 @@ const MateriasPage = () => {
                         <h2 className="text-lg font-semibold text-neutral-900">Listado de Materias</h2>
                         <p className="text-sm text-neutral-500 mt-1">Administra las asignaturas del programa académico</p>
                     </div>
-                    <button className="cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#e96d14] text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-md">
+                    <button onClick={handleCreateClick} className="cursor-pointer w-full sm:w-auto flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#e96d14] text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-md">
                         <Plus className="w-4 h-4"/>
                         <span>Crear Materia</span>
                     </button>
@@ -24,11 +145,29 @@ const MateriasPage = () => {
                                     <th className="px-6 py-4">Id</th>
                                     <th className="px-6 py-4">Nombre de la Materia</th>
                                     <th className="px-6 py-4 text-center">Créditos</th>
+                                    <th className="px-6 py-4 text-center">Semestre</th>
                                     <th className="px-6 py-4 text-center">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100" id="student-table-body">
-                                <TableRow/>
+                            <tbody className="divide-y divide-gray-100" id="materias-table-body">
+                                {showCreate && (
+                                    <CreateMateriaRow visible onCancel={handleCancelCreate} onCreated={handleCreated} onError={setError} />
+                                )}
+                                {materias.map((m) => (
+                                    <TableRow
+                                        key={m.id}
+                                        materia={m}
+                                        isEditing={editingId === m.id}
+                                        editDraft={editingId === m.id ? editDraft ?? undefined : undefined}
+                                        onStartEdit={() => handleStartEdit(m)}
+                                        onCancelEdit={handleCancelEdit}
+                                        onSaveEdit={handleSaveEdit}
+                                        onDelete={handleDelete}
+                                        onEditChange={handleEditChange}
+                                        saving={saving}
+                                        deleting={deletingId === m.id}
+                                    />
+                                ))}
                             </tbody>
                         </table>
                     </div>
@@ -36,6 +175,6 @@ const MateriasPage = () => {
             </div>
         </div>
     );
-}
- 
+};
+
 export default MateriasPage;

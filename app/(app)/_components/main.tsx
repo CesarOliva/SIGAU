@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const Main = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedRole, setSelectedRole] = useState('administrador');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 

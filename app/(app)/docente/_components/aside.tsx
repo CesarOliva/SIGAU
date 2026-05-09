@@ -1,8 +1,6 @@
 "use client";
 
-import { faChalkboardTeacher } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Book, ChartPie, Clock, GraduationCap, Grid2X2, User } from "lucide-react";
+import { ChartPie, GraduationCap, Grid2X2, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
