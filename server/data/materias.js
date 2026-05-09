@@ -1,95 +1,100 @@
-// Base de datos en memoria para materias
-let materias = [
-  {
-    id: 202,
-    nombre: "Fundamentos de telecomunicaciones",
-    creditos: 95,
-    semestre: 1,
-    estado: "Activo",
-    descripcion: "Introducción a los conceptos básicos de telecomunicaciones",
-    fechaCreacion: new Date().toISOString()
-  },
-  {
-    id: 203,
-    nombre: "Física Cuántica Avanzada",
-    creditos: 85,
-    semestre: 6,
-    estado: "Activo",
-    descripcion: "Estudio avanzado de mecánica cuántica",
-    fechaCreacion: new Date().toISOString()
-  },
-  {
-    id: 303,
-    nombre: "Matemáticas Avanzadas",
-    creditos: 90,
-    semestre: 5,
-    estado: "Activo",
-    descripcion: "Análisis matemático avanzado y álgebra lineal",
-    fechaCreacion: new Date().toISOString()
-  },
-  {
-    id: 204,
-    nombre: "Programación Web",
-    creditos: 80,
-    semestre: 3,
-    estado: "Activo",
-    descripcion: "Desarrollo de aplicaciones web modernas",
-    fechaCreacion: new Date().toISOString()
-  },
-  {
-    id: 205,
-    nombre: "Bases de Datos",
-    creditos: 75,
-    semestre: 4,
-    estado: "Activo",
-    descripcion: "Diseño y gestión de bases de datos",
-    fechaCreacion: new Date().toISOString()
-  }
-];
+const pool = require('../config/database');
 
-// Métodos para manipular materias
-const addMateria = (materia) => {
-  materias.push(materia);
-  return materia;
+const baseSelect = `
+    SELECT
+        id,
+        nombre,
+        creditos,
+        semestre,
+        estado,
+        descripcion,
+        fecha_creacion AS fechaCreacion
+    FROM Materias
+`;
+
+const addMateria = async (materia) => {
+    const hasCustomId = materia.id !== undefined && materia.id !== null;
+
+    const query = hasCustomId
+        ? `
+            INSERT INTO Materias (id, nombre, creditos, semestre, estado, descripcion)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `
+        : `
+            INSERT INTO Materias (nombre, creditos, semestre, estado, descripcion)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+    const values = hasCustomId
+        ? [
+            materia.id,
+            materia.nombre,
+            materia.creditos,
+            materia.semestre,
+            materia.estado || 'Activo',
+            materia.descripcion || null
+        ]
+        : [
+            materia.nombre,
+            materia.creditos,
+            materia.semestre,
+            materia.estado || 'Activo',
+            materia.descripcion || null
+        ];
+
+    const [result] = await pool.query(query, values);
+    const createdId = hasCustomId ? materia.id : result.insertId;
+    return getMateriaById(createdId);
 };
 
-const getMateriaById = (id) => {
-  return materias.find(m => m.id === id);
+const getMateriaById = async (id) => {
+    const [rows] = await pool.query(`${baseSelect} WHERE id = ?`, [id]);
+    return rows.length > 0 ? rows[0] : null;
 };
 
-const getAllMaterias = () => {
-  return materias;
+const getAllMaterias = async () => {
+    const [rows] = await pool.query(`${baseSelect} ORDER BY id ASC`);
+    return rows;
 };
 
-const getMateriasBySemestre = (semestre) => {
-  return materias.filter(m => m.semestre === semestre);
+const getMateriasBySemestre = async (semestre) => {
+    const [rows] = await pool.query(`${baseSelect} WHERE semestre = ? ORDER BY id ASC`, [semestre]);
+    return rows;
 };
 
-const deleteMateria = (id) => {
-  const index = materias.findIndex(m => m.id === id);
-  if (index !== -1) {
-    materias.splice(index, 1);
-    return true;
-  }
-  return false;
+const deleteMateria = async (id) => {
+    const [result] = await pool.query('DELETE FROM Materias WHERE id = ?', [id]);
+    return result.affectedRows > 0;
 };
 
-const updateMateria = (id, updates) => {
-  const materia = getMateriaById(id);
-  if (materia) {
-    const materiaActualizada = { ...materia, ...updates };
-    const index = materias.findIndex(m => m.id === id);
-    materias[index] = materiaActualizada;
-    return materiaActualizada;
-  }
-  return null;
+const updateMateria = async (id, updates) => {
+    const camposPermitidos = ['nombre', 'creditos', 'semestre', 'estado', 'descripcion'];
+    const campos = [];
+    const valores = [];
+
+    for (const campo of camposPermitidos) {
+        if (updates[campo] !== undefined) {
+            campos.push(`${campo} = ?`);
+            valores.push(updates[campo]);
+        }
+    }
+
+    if (campos.length === 0) {
+        return getMateriaById(id);
+    }
+
+    valores.push(id);
+
+    const query = `UPDATE Materias SET ${campos.join(', ')} WHERE id = ?`;
+    await pool.query(query, valores);
+    return getMateriaById(id);
 };
 
 module.exports = {
-  addMateria,
-  getMateriaById,
-  getAllMaterias,
-  getMateriasBySemestre,
-  deleteMateria,
-  updateMateria
+    addMateria,
+    getMateriaById,
+    getAllMaterias,
+    getMateriasBySemestre,
+    deleteMateria,
+    updateMateria
 };

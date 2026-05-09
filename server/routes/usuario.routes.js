@@ -17,6 +17,8 @@ router.delete('/usuarios/:id',usuarioController.deleteUser);
 // POST /api/usuarios/:id - edita cualquier usuario (alumno, docente, admin)
 router.put('/usuarios/:id',usuarioController.editUser);
 
+router.get('/usuarios/next-id', usuarioController.getNextId);
+
 
 
 module.exports = router;
