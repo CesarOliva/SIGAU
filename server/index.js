@@ -5,6 +5,7 @@ const cors = require('cors');
 const usuarioRoutes = require('./routes/usuario.routes');
 const materiasRoutes = require('./routes/materias.routes');
 const estadisticasRoutes = require('./routes/estadisticas.routes');
+const docenteMaterialRoutes = require('./routes/docenteMaterias.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,6 +18,7 @@ console.log('Montando rutas...');
 app.use('/api', usuarioRoutes);
 app.use('/api', materiasRoutes);
 app.use('/api', estadisticasRoutes);
+app.use('/api', docenteMaterialRoutes);
 
 // Manejo de errores global (opcional)
 app.use((err, req, res, next) => {

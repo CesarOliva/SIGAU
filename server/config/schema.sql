@@ -86,3 +86,17 @@ CREATE TABLE RendimientoMaterias (
     CONSTRAINT chk_rendimiento_promedio CHECK (promedio_calificacion BETWEEN 0 AND 10),
     CONSTRAINT chk_rendimiento_tasa CHECK (tasa_aprobacion BETWEEN 0 AND 100)
 );
+
+-- Tabla: Asignación de materias a docentes
+CREATE TABLE DocenteMaterias (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    docente_id INT NOT NULL,
+    materia_id INT NOT NULL,
+    fecha_asignacion DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado VARCHAR(50) NOT NULL DEFAULT 'Activo',
+    CONSTRAINT fk_docente_materia FOREIGN KEY (docente_id) REFERENCES Usuarios(num_control)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_materia_docente FOREIGN KEY (materia_id) REFERENCES Materias(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT uq_docente_materia UNIQUE (docente_id, materia_id)
+);
