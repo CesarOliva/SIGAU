@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 //datos de los diferentes roles
 const roles = {
-    alumno: ['nombres', 'apellidos', 'fNacimiento', 'curp', 'correo', 'telefono', 'direccion', 'matricula'],
+    alumno: ['nombres', 'apellidos', 'fNacimiento', 'curp', 'correo', 'telefono', 'direccion'],
     docente: ['nombres', 'apellidos', 'fNacimiento', 'rfc', 'correo', 'telefono', 'direccion', 'descripcion', 'fIngreso', 'especialidad'],
     administrador: ['nombres', 'apellidos', 'fNacimiento', 'curp', 'correo', 'telefono', 'direccion']
 };

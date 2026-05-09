@@ -185,7 +185,7 @@ const UsuariosPage = () => {
         }
 
         if (editDraft.rol === 'alumno') {
-            payload.carrera = Number(editDraft.carrera);
+            payload.carrera = String(editDraft.carrera ?? '');
             payload.semestre = Number(editDraft.semestre);
         }
 

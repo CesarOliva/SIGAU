@@ -39,7 +39,7 @@ CREATE TABLE Docentes (
 CREATE TABLE Alumnos (
     correo_instit VARCHAR(100) PRIMARY KEY,
     num_control INT UNIQUE NOT NULL,
-    carrera INT,
+    carrera VARCHAR(100),
     semestre INT,
     CONSTRAINT fk_alumno_usuario 
         FOREIGN KEY (num_control) REFERENCES Usuarios(num_control)

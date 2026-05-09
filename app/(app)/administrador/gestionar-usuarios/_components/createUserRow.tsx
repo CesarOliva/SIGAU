@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Save, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { UsuarioRowData } from './tableRow';
 
@@ -43,7 +43,7 @@ const emptyDraft = (): DraftUsuario => ({
     descripcion: '',
     fIngreso: '',
     especialidad: '',
-    carrera: '',
+    carrera: 'Sistemas Computacionales',
     semestre: '',
 });
 
@@ -90,7 +90,6 @@ const CreateUserRow = ({ visible, onCancel, onCreated }: CreateUserRowProps) => 
 
         if (isNaN(Number(draft.id))) return 'El ID debe ser numérico';
         if (draft.rol === 'alumno' && draft.semestre && isNaN(Number(draft.semestre))) return 'Semestre debe ser numérico';
-        if (draft.rol === 'alumno' && draft.carrera && isNaN(Number(draft.carrera))) return 'Carrera debe ser numérica';
 
         // Validar fecha de nacimiento (no futura)
         if (draft.fNacimiento) {
@@ -172,7 +171,7 @@ const CreateUserRow = ({ visible, onCancel, onCreated }: CreateUserRowProps) => 
         }
 
         if (draft.rol === 'alumno') {
-            payload.carrera = Number(draft.carrera);
+            payload.carrera = draft.carrera;
             payload.semestre = Number(draft.semestre);
         }
 
@@ -191,7 +190,6 @@ const CreateUserRow = ({ visible, onCancel, onCreated }: CreateUserRowProps) => 
                 throw new Error(data?.error || 'No se pudo crear el usuario');
             }
 
-            toast.success('Usuario creado exitosamente');
             onCreated(data.usuario);
             onCancel();
         } catch (err) {
@@ -334,13 +332,15 @@ const CreateUserRow = ({ visible, onCancel, onCreated }: CreateUserRowProps) => 
                 />
             </td>
             <td className="px-5 py-4">
-                <input
-                    type="number"
+                <select
                     value={draft.carrera}
                     onChange={(e) => handleChange('carrera', e.target.value)}
-                    placeholder="Carrera"
-                    className="w-28 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
-                />
+                    className="w-52 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                    <option value="Sistemas Computacionales">Sistemas Computacionales</option>
+                    <option value="Gestion Empresarial">Gestion Empresarial</option>
+                    <option value="Mecatronica">Mecatronica</option>
+                </select>
             </td>
             <td className="px-5 py-4">
                 <input
