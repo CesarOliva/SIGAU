@@ -47,9 +47,9 @@ const getAllUsers = async (rol = null) => {
 };
 
 // Alias de getAllUsers para mantener compatibilidad
-const getUsers = async () => {
+const getUsers = async (rol = null) => {
     try {
-        return await getAllUsers();
+        return await getAllUsers(rol);
     } catch (error) {
         console.error('Error en getUsers:', error);
         throw error;

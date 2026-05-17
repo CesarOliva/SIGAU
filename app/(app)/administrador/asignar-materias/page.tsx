@@ -1,55 +1,160 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Docente {
     id: number;
     nombres: string;
     apellidos: string;
-    avatar: string;
+    especialidad: string;
+    avatar?: string | null;
 }
 
 interface Materia {
     id: number;
     nombre: string;
     semestre: number;
+    creditos: number;
+    descripcion: string;
+}
+
+interface MateriaDoctente {
+    id: number;
+    materia_id: number;
+    nombre: string;
+    semestre: number;
+    creditos: number;
+    descripcion: string;
 }
 
 const AsignarPage = () => {
     const [docentes, setDocentes] = useState<Docente[]>([]);
-    const [materias, setMaterias] = useState<Materia[]>([]);
     const [selectedDocente, setSelectedDocente] = useState<Docente | null>(null);
+    const [materiasAsignadas, setMateriasAsignadas] = useState<MateriaDoctente[]>([]);
+    const [materiasDisponibles, setMateriasDisponibles] = useState<Materia[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [assigningId, setAssigningId] = useState<number | null>(null);
+    const [removingId, setRemovingId] = useState<number | null>(null);
+    const [searchDocente, setSearchDocente] = useState('');
+    const [searchMateria, setSearchMateria] = useState('');
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [docentesRes, materiasRes] = await Promise.all([
-                    fetch('http://localhost:3001/api/usuarios?rol=docente'),
-                    fetch('http://localhost:3001/api/materias')
-                ]);
-                
-                if (!docentesRes.ok || !materiasRes.ok) throw new Error('Error fetching data');
-                
-                const docentesData = await docentesRes.json();
-                const materiasData = await materiasRes.json();
-                
-                setDocentes(docentesData);
-                setMaterias(materiasData);
-                
-            } catch (err) {
-                console.error('Error:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
+    // Cargar docentes
+    const loadDocentes = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:3001/api/usuarios?rol=docente');
+            if (!response.ok) throw new Error('Error al cargar docentes');
+            const data = await response.json();
+            setDocentes(data);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al cargar docentes');
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const filteredDocentes = docentes.filter(doc => 
-        `${doc.nombres} ${doc.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase())
+    // Cargar materias asignadas al docente seleccionado
+    const loadMateriasAsignadas = useCallback(async (docenteId: number) => {
+        try {
+            const response = await fetch(`http://localhost:3001/api/asignaciones/docente/${docenteId}`);
+            if (!response.ok) throw new Error('Error al cargar materias asignadas');
+            const data = await response.json();
+            setMateriasAsignadas(data);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al cargar materias asignadas');
+            setMateriasAsignadas([]);
+        }
+    }, []);
+
+    // Cargar materias disponibles para el docente seleccionado
+    const loadMateriasDisponibles = useCallback(async (docenteId: number) => {
+        try {
+            const response = await fetch(`http://localhost:3001/api/asignaciones/disponibles/${docenteId}`);
+            if (!response.ok) throw new Error('Error al cargar materias disponibles');
+            const data = await response.json();
+            setMateriasDisponibles(data);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al cargar materias disponibles');
+            setMateriasDisponibles([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadDocentes();
+    }, [loadDocentes]);
+
+    // Cuando se selecciona un docente, cargar sus materias
+    const handleSelectDocente = (docente: Docente) => {
+        setSelectedDocente(docente);
+        loadMateriasAsignadas(docente.id);
+        loadMateriasDisponibles(docente.id);
+    };
+
+    // Asignar materia a docente
+    const handleAsignMateria = async (materiaId: number) => {
+        if (!selectedDocente) return;
+
+        setAssigningId(materiaId);
+        try {
+            const response = await fetch('http://localhost:3001/api/asignaciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    docenteId: selectedDocente.id,
+                    materiaId
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Error al asignar materia');
+            }
+
+            toast.success('Materia asignada exitosamente');
+            loadMateriasAsignadas(selectedDocente.id);
+            loadMateriasDisponibles(selectedDocente.id);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al asignar materia');
+        } finally {
+            setAssigningId(null);
+        }
+    };
+
+    // Desasignar materia de docente
+    const handleDesasignarMateria = async (asignacionId: number) => {
+        if (!selectedDocente) return;
+
+        setRemovingId(asignacionId);
+        try {
+            const response = await fetch(`http://localhost:3001/api/asignaciones/${asignacionId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Error al desasignar materia');
+            }
+
+            toast.success('Materia desasignada exitosamente');
+            loadMateriasAsignadas(selectedDocente.id);
+            loadMateriasDisponibles(selectedDocente.id);
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al desasignar materia');
+        } finally {
+            setRemovingId(null);
+        }
+    };
+
+    // Filtrar docentes por búsqueda
+    const docentesFiltrados = docentes.filter((docente) =>
+        `${docente.nombres} ${docente.apellidos}`.toLowerCase().includes(searchDocente.toLowerCase())
+    );
+
+    // Filtrar materias disponibles por búsqueda
+    const materiasFiltradas = materiasDisponibles.filter((materia) =>
+        materia.nombre.toLowerCase().includes(searchMateria.toLowerCase())
     );
 
     return (
@@ -69,32 +174,44 @@ const AsignarPage = () => {
                             <input 
                                 type="text" 
                                 placeholder="Nombre del docente..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                value={searchDocente}
+                                onChange={(e) => setSearchDocente(e.target.value)}
                                 className="w-full pl-11 pr-4 py-3 bg-[#f4f5f6] border border-transparent focus:border-neutral-200 rounded-xl text-sm focus:outline-none transition-all"
                             />
                         </div>
                     </div>
 
-                    {selectedDocente && (
-                        <div className="mt-6 p-4 border border-neutral-100 rounded-xl bg-neutral-50 flex items-center justify-between flex-wrap gap-4">
-                            <div className="flex items-center gap-4">
-                                <img src={selectedDocente.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt="Docente" className="w-12 h-12 rounded-full object-cover"/>
-                                <h3 className="font-semibold text-neutral-800">{selectedDocente.nombres} {selectedDocente.apellidos}</h3>
+                    <div className="w-full flex-col mt-6 max-h-40 overflow-auto">
+                        {selectedDocente ? (
+                            <div key={selectedDocente.id} className="mt-2 border border-neutral-100 rounded-xl flex items-center justify-between flex-wrap gap-4 cursor-pointer">
+                                <button className="cursor-pointer w-full p-3 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors text-left flex items-center gap-3">
+                                    <img src={selectedDocente.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt={selectedDocente.nombres} className="w-8 h-8 rounded-full object-cover"/>
+                                    <span className="text-sm font-medium text-neutral-800">{selectedDocente.nombres} {selectedDocente.apellidos}</span>
+                                </button>
                             </div>
-                        </div>
-                    )}
+                        ): (
+                            docentesFiltrados.map((docente) => (
+                                <div key={docente.id} className="mt-2 border border-neutral-100 rounded-xl flex items-center justify-between flex-wrap gap-4 cursor-pointer">
+                                    <button className="cursor-pointer w-full p-3 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors text-left flex items-center gap-3" onClick={() => handleSelectDocente(docente)}>
+                                        <img src={docente.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt={docente.nombres} className="w-8 h-8 rounded-full object-cover"/>
+                                        <span className="text-sm font-medium text-neutral-800">{docente.nombres} {docente.apellidos}</span>
+                                    </button>
+                                </div>
+                            ))
+                        )}
 
-                    {searchTerm && filteredDocentes.length > 0 && (
+                    </div>
+
+                    {searchDocente && docentesFiltrados.length > 0 && (
                         <div className="mt-4 border border-neutral-100 rounded-xl max-h-48 overflow-y-auto">
-                            {filteredDocentes.map((doc) => (
+                            {docentesFiltrados.map((doc) => (
                                 <button
                                     key={doc.id}
                                     onClick={() => {
                                         setSelectedDocente(doc);
-                                        setSearchTerm('');
+                                        setSearchDocente('');
                                     }}
-                                    className="w-full p-3 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors text-left flex items-center gap-3"
+                                    className="cursor-pointer w-full p-3 border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors text-left flex items-center gap-3"
                                 >
                                     <img src={doc.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFCzxivJXCZk0Kk8HsHujTO3Olx0ngytPrWw&s"} alt={doc.nombres} className="w-8 h-8 rounded-full object-cover"/>
                                     <span className="text-sm font-medium text-neutral-800">{doc.nombres} {doc.apellidos}</span>
@@ -116,12 +233,12 @@ const AsignarPage = () => {
                         <div className="flex-1 overflow-y-auto space-y-3">
                             {loading ? (
                                 <p className="text-center text-neutral-500">Cargando materias...</p>
-                            ) : materias.length > 0 ? (
-                                materias.map((materia) => (
+                            ) : materiasFiltradas.length > 0 ? (
+                                materiasFiltradas.map((materia) => (
                                     <div key={materia.id} className="p-4 border border-neutral-100 rounded-xl hover:border-neutral-300 transition-colors group bg-white">
                                         <div className="flex justify-between items-start mb-2">
                                             <h4 className="font-semibold text-sm text-neutral-800">{materia.nombre}</h4>
-                                            <button className="px-6 py-2.5 bg-[#1a1d1f] text-white rounded-xl text-sm font-medium hover:bg-neutral-800 transition-colors cursor-pointer">
+                                            <button className="px-6 py-2.5 bg-[#1a1d1f] text-white rounded-xl text-sm font-medium hover:bg-neutral-800 transition-colors cursor-pointer" onClick={() => handleAsignMateria(materia.id)}>
                                                 Asignar
                                             </button>
                                         </div>
@@ -146,10 +263,28 @@ const AsignarPage = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-3">
-                            {selectedDocente ? (
-                                <p className="text-center text-neutral-500 text-sm">Seleccione materias de la izquierda para asignar</p>
+                            {materiasAsignadas.length === 0 ? (
+                                <div className="p-6 text-center text-neutral-500 text-sm">No hay materias asignadas</div>
                             ) : (
-                                <p className="text-center text-neutral-500 text-sm">Seleccione un docente primero</p>
+                                <div className="divide-y divide-neutral-100">
+                                    {materiasAsignadas.map((materia) => (
+                                        <div key={materia.id} className="p-4 hover:bg-orange-50 transition-colors flex justify-between items-start rounded-lg">
+                                            <div className="flex-1">
+                                                <div className="font-medium text-sm text-neutral-900">{materia.nombre}</div>
+                                                <div className="text-xs text-neutral-600 mt-1">
+                                                    Semestre {materia.semestre} • {materia.creditos} créditos
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleDesasignarMateria(materia.id)}
+                                                disabled={removingId === materia.id}
+                                                className="cursor-pointer ml-2 p-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors disabled:opacity-50"
+                                            >
+                                                <Trash2 className="size-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
                         

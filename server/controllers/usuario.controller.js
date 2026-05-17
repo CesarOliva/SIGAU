@@ -159,7 +159,13 @@ const createUsers = async (req, res) => {
 //mostrar usuarios
 const showUsers = async (req, res) => {
     try {
-        const usuarios = await data.getUsers();
+        const rol = req.query.rol;
+
+        if (rol && !['alumno', 'docente', 'administrador'].includes(rol)) {
+            return res.status(400).json({ error: 'Rol inválido. Debe ser: alumno, docente o administrador' });
+        }
+
+        const usuarios = await data.getUsers(rol || null);
         res.json(usuarios);
     } catch (error) {
         console.error(error);
