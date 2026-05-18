@@ -15,17 +15,9 @@ const getAllMaterias = async (req, res) => {
 const getMateriaById = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        
-        if (isNaN(id)) {
-            return res.status(400).json({ error: "Id inválido" });
-        }
-        
+        if (isNaN(id)) return res.status(400).json({ error: "Id inválido" });
         const materia = await data.getMateriaById(id);
-        
-        if (!materia) {
-            return res.status(404).json({ error: "Materia no encontrada" });
-        }
-        
+        if (!materia) return res.status(404).json({ error: "Materia no encontrada" });
         return res.status(200).json(materia);
     } catch (error) {
         console.error(error);
@@ -37,11 +29,7 @@ const getMateriaById = async (req, res) => {
 const getMateriasBySemestre = async (req, res) => {
     try {
         const semestre = parseInt(req.params.semestre);
-        
-        if (isNaN(semestre)) {
-            return res.status(400).json({ error: "Semestre inválido" });
-        }
-        
+        if (isNaN(semestre)) return res.status(400).json({ error: "Semestre inválido" });
         const materias = await data.getMateriasBySemestre(semestre);
         return res.status(200).json(materias);
     } catch (error) {
@@ -54,43 +42,29 @@ const getMateriasBySemestre = async (req, res) => {
 const createMateria = async (req, res) => {
     try {
         const { id, nombre, creditos, semestre, estado, descripcion } = req.body;
-        
         if (!nombre || creditos === undefined || semestre === undefined) {
             return res.status(400).json({ error: "Faltan campos requeridos: nombre, creditos, semestre" });
         }
-        
         const creditosNumerico = parseInt(creditos);
         const semestreNumerico = parseInt(semestre);
-
         let idNumerico;
         if (id !== undefined && id !== null && id !== '') {
             idNumerico = parseInt(id);
-            if (isNaN(idNumerico)) {
-                return res.status(400).json({ error: 'id debe ser numérico' });
-            }
+            if (isNaN(idNumerico)) return res.status(400).json({ error: 'id debe ser numérico' });
         }
-
         if (isNaN(creditosNumerico) || isNaN(semestreNumerico)) {
             return res.status(400).json({ error: 'creditos y semestre deben ser numéricos' });
         }
-        
         const nuevaMateria = {
             nombre,
             creditos: creditosNumerico,
             semestre: semestreNumerico,
-            estado: estado || "Activo",
+            estado: estado || "activo",
             descripcion: descripcion || null
         };
-
-        if (idNumerico !== undefined) {
-            nuevaMateria.id = idNumerico;
-        }
-        
+        if (idNumerico !== undefined) nuevaMateria.id = idNumerico;
         const materiaCreada = await data.addMateria(nuevaMateria);
-        return res.status(201).json({
-            message: 'Materia creada exitosamente',
-            materia: materiaCreada
-        });
+        return res.status(201).json({ message: 'Materia creada exitosamente', materia: materiaCreada });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error al crear la materia: ' + error.message });
@@ -102,64 +76,74 @@ const updateMateria = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const update = req.body;
-        
-        if (isNaN(id)) {
-            return res.status(400).json({ error: "Id inválido" });
-        }
-        
-        if (!update || Object.keys(update).length === 0) {
-            return res.status(400).json({ error: "No hay datos para actualizar" });
-        }
-        
+        if (isNaN(id)) return res.status(400).json({ error: "Id inválido" });
+        if (!update || Object.keys(update).length === 0) return res.status(400).json({ error: "No hay datos para actualizar" });
         const materia = await data.getMateriaById(id);
-        if (!materia) {
-            return res.status(404).json({ error: "Materia no encontrada" });
-        }
-
+        if (!materia) return res.status(404).json({ error: "Materia no encontrada" });
         if (update.creditos !== undefined) {
             update.creditos = parseInt(update.creditos);
-            if (isNaN(update.creditos)) {
-                return res.status(400).json({ error: 'creditos debe ser numérico' });
-            }
+            if (isNaN(update.creditos)) return res.status(400).json({ error: 'creditos debe ser numérico' });
         }
-
         if (update.semestre !== undefined) {
             update.semestre = parseInt(update.semestre);
-            if (isNaN(update.semestre)) {
-                return res.status(400).json({ error: 'semestre debe ser numérico' });
-            }
+            if (isNaN(update.semestre)) return res.status(400).json({ error: 'semestre debe ser numérico' });
         }
-        
         const materiaActualizada = await data.updateMateria(id, update);
-        return res.status(200).json({
-            message: "Materia actualizada correctamente",
-            materia: materiaActualizada
-        });
+        return res.status(200).json({ message: "Materia actualizada correctamente", materia: materiaActualizada });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error al actualizar la materia' });
     }
 };
 
-// Eliminar materia
+// Eliminar materia (DEFINITIVA)
 const deleteMateria = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
-        
-        if (isNaN(id)) {
-            return res.status(400).json({ error: "Id inválido" });
-        }
-        
+        if (isNaN(id)) return res.status(400).json({ error: "Id inválido" });
         const materia = await data.getMateriaById(id);
-        if (!materia) {
-            return res.status(404).json({ error: "Materia no encontrada" });
+        if (!materia) return res.status(404).json({ error: "Materia no encontrada" });
+        
+        // ✅ Guardar motivo en auditoría si se envía
+        if (req.body.reason) {
+            await data.logAudit(id, req.body.reason);
         }
         
         await data.deleteMateria(id);
-        return res.json({ mensaje: "Materia eliminada correctamente" });
+        return res.json({ message: "Materia eliminada correctamente" });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Error al eliminar la materia' });
+    }
+};
+
+// 🔄 Desactivar materia (borrado suave)
+const deactivateMateria = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ error: "Id inválido" });
+        const materia = await data.getMateriaById(id);
+        if (!materia) return res.status(404).json({ error: "Materia no encontrada" });
+        const materiaActualizada = await data.updateMateria(id, { estado: 'inactivo' });
+        return res.status(200).json({ message: "Materia desactivada correctamente", materia: materiaActualizada });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error al desactivar la materia' });
+    }
+};
+
+// ↩️ Reactivar materia
+const activateMateria = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return res.status(400).json({ error: "Id inválido" });
+        const materia = await data.getMateriaById(id);
+        if (!materia) return res.status(404).json({ error: "Materia no encontrada" });
+        const materiaActualizada = await data.updateMateria(id, { estado: 'activo' });
+        return res.status(200).json({ message: "Materia reactivada correctamente", materia: materiaActualizada });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error al reactivar la materia' });
     }
 };
 
@@ -169,5 +153,7 @@ module.exports = {
     getMateriasBySemestre,
     createMateria,
     updateMateria,
-    deleteMateria
+    deleteMateria,
+    deactivateMateria,
+    activateMateria
 };

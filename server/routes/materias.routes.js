@@ -17,7 +17,11 @@ router.post('/materias', materiasController.createMateria);
 // PUT /api/materias/:id - Actualizar materia
 router.put('/materias/:id', materiasController.updateMateria);
 
-// DELETE /api/materias/:id - Eliminar materia
+// DELETE /api/materias/:id - Eliminar materia DEFINITIVAMENTE
 router.delete('/materias/:id', materiasController.deleteMateria);
+
+// ✅ NUEVAS RUTAS para cambio de estado
+router.patch('/materias/:id/deactivate', materiasController.deactivateMateria);  // Desactivar
+router.patch('/materias/:id/activate', materiasController.activateMateria);       // Reactivar
 
 module.exports = router;
